@@ -1,8 +1,4 @@
-pywin32
+python-quickbooks>=0.8
 pyodbc
-lxml
-contextlib
+pandas
 configparser
-time
-datetime
-logging
