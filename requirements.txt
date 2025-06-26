@@ -1,0 +1,8 @@
+pywin32
+pyodbc
+lxml
+contextlib
+configparser
+time
+datetime
+logging
