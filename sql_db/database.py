@@ -30,7 +30,7 @@ def get_active_companies():
     conn = None
     try:
         query = "SELECT CompanyID, CompanyName FROM etl.Companies where IsActive = 1" 
-        conn = get_db_connection
+        conn = get_db_connection()
         df = pd.read_sql(query, conn)
         return df.to_dict('records')
     finally:
