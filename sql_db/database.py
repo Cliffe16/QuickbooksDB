@@ -26,11 +26,17 @@ def get_db_connection():
 
 def get_active_companies():
     """Fetches active companies from the control table"""
-    query = "SELECT CompanyID, CompanyName FROM etl.Companies where IsActive = 1" 
-    conn = get_db_connection
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df.to_dict('records')
+    logging.info("Fetching active companies from etl.Companies control table.")
+    conn = None
+    try:
+        query = "SELECT CompanyID, CompanyName FROM etl.Companies where IsActive = 1" 
+        conn = get_db_connection
+        df = pd.read_sql(query, conn)
+        return df.to_dict('records')
+    finally:
+        if conn:
+            conn.close()
+    
 
 def update_sync_status(company_id, status, message):
     """Updates a sync status for a company in the control table"""
