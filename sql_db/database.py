@@ -56,44 +56,85 @@ def update_sync_status(company_id, status, message):
         if conn:
             conn.close()
     
-def upsert_data(df, table_name):
+def upsert_data(df, table_name, pk_cols):
     """Performs an upsert(update existing, insert new operation.
     A temporary table and MERGE statement is used for high efficiency)"""
+    if df.empty:
+        logging.info(f"DataFrame for {table_name} is empty. Nothing to upsert.")
+        return
+
+    logging.info(f"Starting upsert process for {len(df)} rows into {table_name}.")
+    
+    conn = None
     #Create a temporary table with the same structure as the tables to be upserted
-    temp_table_name = f"#{table_name}_temp" # create temporary  table
     
-    conn = get_db_connection
-    cursor = conn.cursor()
-    cursor.execute(f"SELECT TOP 0 * INTO {temp_table_name} FROM {table_name}") #fetch table structure
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Sanitize column names for SQL
+        df.columns = [f"[{col}]" for col in df.columns]
+            
+        # Create the ON clause for the MERGE statement
+        on_clause = " AND ".join([f"target.[{pk}] = source.[{pk}]" for pk in pk_cols])
+            
+        # Create the UPDATE SET clause
+        update_cols = [col for col in df.columns if f"[{col}]" not in pk_cols]
+        update_clause = ", ".join([f"target.{col} = source.{col}" for col in update_cols])
+
+        
+        #Create the INSERT clause
+        all_cols = ", ".join(df.columns)
+        source_cols = ", ".join([f"source.{col}" for col in df.columns])
+        
+        # Create temporary  table
+        temp_table_name = f"##{table_name.replace('.','_')}_temp" 
+        cursor.execute(f"SELECT TOP 0 * INTO {temp_table_name} FROM {table_name}") #fetch table structure
+        
+        #Create a list of tuples from the dataframe to insert into the temp table
+        data_tuples = [tuple(x) for x in df.to_numpy()]
+        
+        #Insert values(placeholders) into the table
+        placeholders = ", ".join("?" * len(df.columns)) #placeholders should match the number of columns in the dataframe
+        insert_sql = f"""INSERT INTO {temp_table_name} ({all_cols}) 
+                        VALUES ({placeholders})"""
+        cursor.fast_executemany = True
+        cursor.executemany(insert_sql, data_tuples)
+        
+        #Use a MERGE statement to upsert from the temp table to the main table 
+        if update_clause:
+                merge_sql = f"""
+                    MERGE {table_name} AS target
+                    USING {temp_table_name} AS source
+                    ON {on_clause}
+                    WHEN MATCHED THEN
+                        UPDATE SET {update_clause}
+                    WHEN NOT MATCHED BY TARGET THEN
+                        INSERT ({all_cols}) VALUES ({source_cols});
+                """
+        
+        else:
+            merge_sql = f"""
+                MERGE {table_name} AS target
+                USING {temp_table_name} AS source
+                ON {on_clause}
+                WHEN NOT MATCHED BY TARGET THEN
+                    INSERT ({all_cols}) 
+                    VALUES ({source_cols}) 
+                """
+        cursor.execute(merge_sql)
+        conn.commit()
+        logging.info(f"Upsert for {table_name} successful. {cursor.rowcount} rows affected.")
+        cursor.execute(f"DROP TABLE {temp_table_name}")
     
-    #Create a list of tuples from the dataframe to insert into the temp table
-    data_tuples = [tuple(x) for x in df.to_numpy()]
-    
-    #Insert values(placeholders) into the table
-    placeholders = ", ".join("?" * len(df.columns)) #placeholders should match the number of columns in the dataframe
-    insert_sql = f"INSERT INTO {temp_table_name} VALUES {placeholders}"
-    
-    cursor.executemany(insert_sql, data_tuples)
-    
-    #Use a MERGE statement to upsert from the temp table to the main table assuming 'ListID' and 'CompanyID' are composite primary keys
-    merge_sql = f"""
-        MERGE {table_name} AS target
-        USING {temp_table_name} AS source
-        ON target.ListID = source.ListID AND target.CompanyID = source.CompanyID
-        WHEN MATCHED THEN
-            UPDATE
-            SET {', '.join([f'target.[{col}] =  source.[{col}]' for col in df.columns])} --updates all columns in the dataframe i.e target table with the lastest data from the source table
-        WHEN NOT MATCHED BY TARGET THEN
-            INSERT ({', '.join([f'[{col}]' for col in df.columns])}) --list of columns from the target table that have new records to be inserted
-            VALUES ({', '.join([f'source.[{col}]' for col in df.columns])}) --list of values to be pulled from the source table as new records
-        """
-    cursor.execute(merge_sql)
-    conn.commit()
-    
-    #Clean up
-    cursor.execute(f"DROP TABLE {temp_table_name}")
-    cursor.close()
-    conn.close()
+    except Exception as e:
+        logging.error(f"An error occurred during upsert to {table_name}: {e}")
+        if conn:
+            conn.rollback()
+        raise
+    finally:
+        if conn:
+            conn.close()
             
     
     
