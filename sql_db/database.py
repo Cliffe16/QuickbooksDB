@@ -7,7 +7,7 @@ def get_db_connection():
     """Establishes and returns a pyodbc database connection."""
     try:
         config = ConfigParser
-        config.read('config/config.ini') #read config.ini
+        config.read(['config/config.ini']) #read config.ini
         db_config = config['SQL Server'] #read SQL Server configuration settings
         
         #Define the connection string
