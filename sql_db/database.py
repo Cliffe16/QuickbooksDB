@@ -1,29 +1,33 @@
 import pyodbc
 import pandas as pd
 from configparser import ConfigParser
+import logging
 
 def get_db_connection():
     """Establishes and returns a pyodbc database connection."""
-    config = ConfigParser
-    config.read('config/config.ini') #read config.ini
-    db_config = config['SQL Server'] #read SQL Server configuration settings
-    
-    #Define the connection string
-    conn_str = (
-        f"DRIVER={db_config['driver']};"
-        f"SERVER={db_config['server']};"
-        f"DATABASE={db_config['database']};"
-        f"UID={db_config['uid']};"
-        f"PWD={db_config['pwd']}"
-        "Encrypt=yes;TrustServerCertificate=no;Connection Timeout = 30;"
-    )
-    return pyodbc.connect(conn_str)
+    try:
+        config = ConfigParser
+        config.read('config/config.ini') #read config.ini
+        db_config = config['SQL Server'] #read SQL Server configuration settings
+        
+        #Define the connection string
+        conn_str = (
+            f"DRIVER={{{db_config['driver']}}};"  
+            f"SERVER={db_config['server']};"
+            f"DATABASE={db_config['database']};"
+            f"UID={db_config['username']};"
+            f"PWD={db_config['password']};"
+            "Encrypt=yes;TrustServerCertificate=no;Connection Timeout = 30;"
+        )
+        return pyodbc.connect(conn_str)
+    except Exception as e:
+        logging.error(f"Database connection failed: {e}")
+        raise
 
 def get_active_companies():
     """Fetches active companies from the control table"""
     query = "SELECT CompanyID, CompanyName FROM etl.Companies where IsActive = 1" 
     conn = get_db_connection
-    cursor = conn.cursor()
     df = pd.read_sql(query, conn)
     conn.close()
     return df.to_dict('records')
