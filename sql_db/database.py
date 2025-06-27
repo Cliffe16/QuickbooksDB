@@ -40,17 +40,21 @@ def get_active_companies():
 
 def update_sync_status(company_id, status, message):
     """Updates a sync status for a company in the control table"""
-    query = """
-        UPDATE etl.Companies
-        SET LastSyncStatus = ?, LastSyncMessage = ?, LastSyncTimeUTC = GETUTCDATE()
-        WHERE CompanyID = ?
-    """
-    conn = get_db_connection
-    cursor = conn.cursor()
-    cursor.execute(query, company_id, status, message)
-    conn.commit()
-    cursor.close()
-    conn.close()
+    logging.info(f"Updating sync status for CompanyID {company_id}: {status}")
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        query = """
+            UPDATE etl.Companies
+            SET LastSyncStatus = ?, LastSyncMessage = ?, LastSyncTimeUTC = GETUTCDATE()
+            WHERE CompanyID = ?
+        """
+        cursor.execute(query, company_id, status, message)
+        conn.commit()
+    finally:
+        if conn:
+            conn.close()
     
 def upsert_data(df, table_name):
     """Performs an upsert(update existing, insert new operation.
