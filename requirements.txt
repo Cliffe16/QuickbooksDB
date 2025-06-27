@@ -2,3 +2,4 @@ python-quickbooks>=0.8
 pyodbc
 pandas
 configparser
+logging
