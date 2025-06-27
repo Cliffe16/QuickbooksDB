@@ -19,12 +19,11 @@ def get_db_connection():
     )
     return pyodbc.connect(conn_str)
 
-conn = get_db_connection
-cursor = conn.cursor()
-
 def get_active_companies():
     """Fetches active companies from the control table"""
     query = "SELECT CompanyID, CompanyName FROM etl.Companies where IsActive = 1" 
+    conn = get_db_connection
+    cursor = conn.cursor()
     df = pd.read_sql(query, conn)
     conn.close()
     return df.to_dict('records')
@@ -36,6 +35,8 @@ def update_sync_status(company_id, status, message):
         SET LastSyncStatus = ?, LastSyncMessage = ?, LastSyncTimeUTC = GETUTCDATE()
         WHERE CompanyID = ?
     """
+    conn = get_db_connection
+    cursor = conn.cursor()
     cursor.execute(query, company_id, status, message)
     conn.commit()
     cursor.close()
@@ -46,6 +47,9 @@ def upsert_data(df, table_name):
     A temporary table and MERGE statement is used for high efficiency)"""
     #Create a temporary table with the same structure as the tables to be upserted
     temp_table_name = f"#{table_name}_temp" # create temporary  table
+    
+    conn = get_db_connection
+    cursor = conn.cursor()
     cursor.execute(f"SELECT TOP 0 * INTO {temp_table_name} FROM {table_name}") #fetch table structure
     
     #Create a list of tuples from the dataframe to insert into the temp table
