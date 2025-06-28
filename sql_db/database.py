@@ -8,7 +8,7 @@ def get_db_connection():
     try:
         config = ConfigParser()
         config.read('config/config.ini') #read config.ini
-        db_config = config['SQL Server'] #read SQL Server configuration settings
+        db_config = config['SQL_SERVER'] #read SQL Server configuration settings
         
         #Define the connection string
         conn_str = (
