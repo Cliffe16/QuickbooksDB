@@ -7,7 +7,7 @@ import logging
 
 def get_qb_client(company_config):
     """Initializes and returns a Quickbooks client from company-specifc config."""
-    config = ConfigParser
+    config = ConfigParser()
     config.read('config/config.ini')
     qb_creds = config['QUICKBOOKS']
     
