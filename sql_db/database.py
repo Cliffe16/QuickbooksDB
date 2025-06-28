@@ -27,34 +27,34 @@ def get_db_connection():
 def get_active_companies():
     """Fetches active companies from the control table"""
     logging.info("Fetching active companies from etl.Companies control table.")
-    conn = None
+    conn_str = None
     try:
         query = "SELECT CompanyID, CompanyName FROM etl.Companies where IsActive = 1" 
-        conn = get_db_connection()
-        df = pd.read_sql(query, conn)
+        conn_str = get_db_connection()
+        df = pd.read_sql(query, conn_str)
         return df.to_dict('records')
     finally:
-        if conn:
-            conn.close()
+        if conn_str:
+            conn_str.close()
     
 
 def update_sync_status(company_id, status, message):
     """Updates a sync status for a company in the control table"""
     logging.info(f"Updating sync status for CompanyID {company_id}: {status}")
-    conn = None
+    conn_str = None
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        conn_str = get_db_connection()
+        cursor = conn_str.cursor()
         query = """
             UPDATE etl.Companies
             SET LastSyncStatus = ?, LastSyncMessage = ?, LastSyncTimeUTC = GETUTCDATE()
             WHERE CompanyID = ?
         """
         cursor.execute(query, status, message, company_id)
-        conn.commit()
+        conn_str.commit()
     finally:
-        if conn:
-            conn.close()
+        if conn_str:
+            conn_str.close()
     
 def upsert_data(df, table_name, pk_cols):
     """Performs an upsert(update existing, insert new operation.
@@ -64,12 +64,12 @@ def upsert_data(df, table_name, pk_cols):
         return
 
     logging.info(f"Starting upsert process for {len(df)} rows into {table_name}.")
-    conn = None
+    conn_str = None
     
     #Create a temporary table with the same structure as the tables to be upserted
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        conn_str = get_db_connection()
+        cursor = conn_str.cursor()
         
         # Sanitize column names for SQL
         df.columns = [f"[{col}]" for col in df.columns]
@@ -122,18 +122,18 @@ def upsert_data(df, table_name, pk_cols):
                     VALUES ({source_cols}) 
                 """
         cursor.execute(merge_sql)
-        conn.commit()
+        conn_str.commit()
         logging.info(f"Upsert for {table_name} successful. {cursor.rowcount} rows affected.")
         cursor.execute(f"DROP TABLE {temp_table_name}")
     
     except Exception as e:
         logging.error(f"An error occurred during upsert to {table_name}: {e}")
-        if conn:
-            conn.rollback()
+        if conn_str:
+            conn_str.rollback()
         raise
     finally:
-        if conn:
-            conn.close()
+        if conn_str:
+            conn_str.close()
             
     
     
