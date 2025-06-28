@@ -1,9 +1,9 @@
 /*ADMINISTRATIVE RIGHTS*/
 -- Create a login for the Python application
-CREATE LOGIN Flamingo_ETL WITH PASSWORD = '1234';
+CREATE LOGIN QB_API WITH PASSWORD = 'DRUMbeats9876@FL!';
 
 -- Create a user in your database for that login
-CREATE USER Cliffe FOR LOGIN Flamingo_ETL;
+CREATE USER Cliffe FOR LOGIN QB_API;
 
 -- Grant permissions to the user
 GRANT SELECT, UPDATE ON SCHEMA::etl TO Cliffe;
