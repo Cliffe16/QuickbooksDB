@@ -74,7 +74,7 @@ def run_sync_for_company(company_config):
             (objects.Invoice, client.transform_invoice, "qb_data.Invoices", "qb_data.InvoiceLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
             (objects.Bill, client.transform_bill, "qb_data.Bills", "qb_data.BillLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
             (objects.JournalEntry, client.transform_journal_entry, "qb_data.JournalEntries", "qb_data.JournalEntryLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
-            (objects.SalesOrder, client.transform_sales_order, "qb_data.SalesOrders", "qb_data.SalesOrderLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
+            (objects.SalesReceipt, client.transform_sales_order, "qb_data.SalesOrders", "qb_data.SalesOrderLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
             (objects.PurchaseOrder, client.transform_purchase_order, "qb_data.PurchaseOrders", "qb_data.PurchaseOrderLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
         ]
 
