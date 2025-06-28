@@ -6,8 +6,8 @@ import logging
 def get_db_connection():
     """Establishes and returns a pyodbc database connection."""
     try:
-        config = ConfigParser
-        config.read(['config/config.ini']) #read config.ini
+        config = ConfigParser()
+        config.read('config/config.ini') #read config.ini
         db_config = config['SQL Server'] #read SQL Server configuration settings
         
         #Define the connection string
@@ -50,7 +50,7 @@ def update_sync_status(company_id, status, message):
             SET LastSyncStatus = ?, LastSyncMessage = ?, LastSyncTimeUTC = GETUTCDATE()
             WHERE CompanyID = ?
         """
-        cursor.execute(query, company_id, status, message)
+        cursor.execute(query, status, message, company_id)
         conn.commit()
     finally:
         if conn:
@@ -64,10 +64,9 @@ def upsert_data(df, table_name, pk_cols):
         return
 
     logging.info(f"Starting upsert process for {len(df)} rows into {table_name}.")
-    
     conn = None
-    #Create a temporary table with the same structure as the tables to be upserted
     
+    #Create a temporary table with the same structure as the tables to be upserted
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
