@@ -13,13 +13,13 @@ def sync_list_data(qb_client, company_id, qb_object, transform_func, table_name,
     try:
         df = client.fetch_data(qb_client, qb_object, company_id, transform_func) #fetch and transform api data 
         if not df.empty:
-            database.upsert(df, table_name, pk_cols)
+            database.upsert_data(df, table_name, pk_cols)
     except Exception as e:
-        logging.error(f"Failed to sync{qb_object.__name__}: {e}")
+        logging.error(f"Failed to sync {qb_object.__name__}: {e}")
          
 def sync_transactional_data(qb_client, company_id, qb_object, transform_func, header_table, line_table, header_pk, line_pk):
     """Generic sync function for transactional data(header and lines)"""
-    logging.info(f"---Syncing{qb_object.__name__}---")
+    logging.info(f"---Syncing {qb_object.__name__}---")
     try:
         all_transactions = qb_object.all(qb=qb_client) 
         if not all_transactions:
@@ -43,7 +43,7 @@ def sync_transactional_data(qb_client, company_id, qb_object, transform_func, he
             database.upsert_data(lines_df, line_table, line_pk)
             
     except Exception as e:
-        logging.error(f"Failes to sync {qb_object.__name__}: {e}")
+        logging.error(f"Failed to sync {qb_object.__name__}: {e}")
         
 def run_sync_for_company(company_config):
     """Runs the full data synchronization process for a single company."""
@@ -82,10 +82,10 @@ def run_sync_for_company(company_config):
             sync_transactional_data(qb_client, company_id, qb_obj, transform, h_tbl, l_tbl, h_pk, l_pk)
             
         database.update_sync_status(company_id, 'Success', 'Full sync completed successfully.')
-        logging.info(f"===Sync successful for: {company_config}['CompanyName]===")
+        logging.info(f"===Sync successful for: {company_config}['CompanyName']===")
     
     except Exception as e:
-        error_message = f"A critical error occured during sync for {company_id}: {e}"
+        error_message = f"A critical error occurred during sync for {company_id}: {e}"
         logging.error(error_message)
         database.update_sync_status(company_id, 'Failed', error_message)
         
