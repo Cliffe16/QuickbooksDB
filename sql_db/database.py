@@ -17,7 +17,7 @@ def get_db_connection():
             f"DATABASE={db_config['database']};"
             f"UID={db_config['username']};"
             f"PWD={db_config['password']};"
-            "Encrypt=yes;TrustServerCertificate=no;Connection Timeout = 30;"
+            "Encrypt=yes;TrustServerCertificate=yes;Connection Timeout = 30;"
         )
         return pyodbc.connect(conn_str)
     except Exception as e:
