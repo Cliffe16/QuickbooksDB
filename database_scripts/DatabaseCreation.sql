@@ -17,7 +17,6 @@ BEGIN
 END
 GO
 COMMIT;
-
 --Create Database Control Table to manage which companies are processed
 CREATE TABLE etl.Companies(
 	CompanyID NVARCHAR(50) PRIMARY KEY NOT NULL,
@@ -32,16 +31,16 @@ GO
 PRINT 'Table "etl.Companies" created.';
 
 --Populate the table with company file details
-/*INSERT INTO etl.Companies(
+INSERT INTO etl.Companies(
 	CompanyID,
 	CompanyName,
 	QBFilePath,
 	IsActive 
+)
 VALUES
-(),
-();
+('9341454898540847', 'Flamingo', 'RT1-220-H0-1759856206d1okijvo3tuueitgdp40', 1);
 GO
-PRINT 'company details inserted into etl.Companies';*/
+PRINT 'company details inserted into etl.Companies';
 
 /*LIST TABLES (Who, What, How)*/
 --Create Accounts Table
