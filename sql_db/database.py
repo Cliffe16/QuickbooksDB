@@ -29,7 +29,7 @@ def get_active_companies():
     logging.info("Fetching active companies from etl.Companies control table.")
     conn_str = None
     try:
-        query = "SELECT CompanyID, CompanyName FROM etl.Companies where IsActive = 1" 
+        query = "SELECT CompanyID, CompanyName, QBFilePath FROM etl.Companies where IsActive = 1" 
         conn_str = get_db_connection()
         df = pd.read_sql(query, conn_str)
         return df.to_dict('records')

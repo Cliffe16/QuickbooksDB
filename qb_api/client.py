@@ -238,7 +238,7 @@ def transform_purchase_order(po, cid):
     for line in po.Line:
         if line.ItemBasedExpenseLineDetail:
             lines.append({
-                "TxnLineID": line.Id, "Parent__TxnID": po.Id, "CompanyID": cid,
+                "TxnLineID": line.Id, "Parent_TxnID": po.Id, "CompanyID": cid,
                 "ItemRef_FullName": line.ItemBasedExpenseLineDetail.ItemRef.name,
                 "Description": line.Description, "Quantity": line.ItemBasedExpenseLineDetail.get("Qty"),
                 "Rate": line.ItemBasedExpenseLineDetail.get("UnitPrice"), "Amount": line.Amount
