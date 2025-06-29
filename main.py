@@ -1,34 +1,34 @@
+# In main.py
 import logging
 from sql_db import database
 from qb_api import client
 from quickbooks import objects
 import pandas as pd
 
-#Define log format
-logging.basicConfig(level=logging.INFO, format = '%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def sync_list_data(qb_client, company_id, qb_object, transform_func, table_name, pk_cols):
-    """Generic sync function for simple list objects"""
+    """Generic sync function for simple list objects. Returns True on success, False on failure."""
     logging.info(f"---Syncing {qb_object.__name__}---")
     try:
-        df = client.fetch_data(qb_client, qb_object, company_id, transform_func) #fetch and transform api data 
-        if not df.empty:
+        df = client.fetch_data(qb_client, qb_object, company_id, transform_func)
+        if df is not None and not df.empty:
             database.upsert_data(df, table_name, pk_cols)
+        return True # Return True if fetch and upsert are successful
     except Exception as e:
         logging.error(f"Failed to sync {qb_object.__name__}: {e}")
-         
+        return False # Return False on any exception
+
 def sync_transactional_data(qb_client, company_id, qb_object, transform_func, header_table, line_table, header_pk, line_pk):
-    """Generic sync function for transactional data(header and lines)"""
+    """Generic sync function for transactional data. Returns True on success, False on failure."""
     logging.info(f"---Syncing {qb_object.__name__}---")
     try:
-        all_transactions = qb_object.all(qb=qb_client) 
+        all_transactions = qb_object.all(qb=qb_client)
         if not all_transactions:
             logging.info(f"No records found for {qb_object.__name__}.")
-            return
+            return True # No records is a success condition
 
-        all_headers = []
-        all_lines = []
-        
+        all_headers, all_lines = [], []
         for txn in all_transactions:
             header, lines = transform_func(txn, company_id)
             all_headers.append(header)
@@ -41,20 +41,27 @@ def sync_transactional_data(qb_client, company_id, qb_object, transform_func, he
             database.upsert_data(headers_df, header_table, header_pk)
         if not lines_df.empty:
             database.upsert_data(lines_df, line_table, line_pk)
-            
+        return True # Return True on success
     except Exception as e:
         logging.error(f"Failed to sync {qb_object.__name__}: {e}")
-        
+        return False # Return False on any exception
+
 def run_sync_for_company(company_config):
     """Runs the full data synchronization process for a single company."""
-    
     company_id = company_config['CompanyID']
     logging.info(f"===Starting sync for: {company_config['CompanyName']} (ID: {company_id})===")
     
+    sync_failed = False  #<-- Initialize a failure flag
+
     try:
-        qb_client = client.get_qb_client(company_config)
-        
-        #Sync List Entities
+        # Capture both client and new token ---
+        qb_client, new_refresh_token = client.get_qb_client(company_config)
+
+        # Update the refresh token in the database 
+        if new_refresh_token != company_config['RefreshToken']:
+            database.update_refresh_token(company_id, new_refresh_token)
+            logging.info(f"Updated refresh token in database for Company ID: {company_id}")
+                
         list_entities_to_sync = [
             (objects.Account, client.transform_account, "qb_data.Accounts", ["ListID", "CompanyID"]),
             (objects.Customer, client.transform_customer, "qb_data.Customers", ["ListID", "CompanyID"]),
@@ -67,9 +74,10 @@ def run_sync_for_company(company_config):
         ]
         
         for qb_obj, transform, table, pk in list_entities_to_sync:
-            sync_list_data(qb_client, company_id, qb_obj, transform, table, pk)
+            # If a sync function returns False, set the failure flag
+            if not sync_list_data(qb_client, company_id, qb_obj, transform, table, pk):
+                sync_failed = True
             
-        #Sync Transactional Entities
         transactional_entities_to_sync = [
             (objects.Invoice, client.transform_invoice, "qb_data.Invoices", "qb_data.InvoiceLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
             (objects.Bill, client.transform_bill, "qb_data.Bills", "qb_data.BillLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
@@ -79,10 +87,18 @@ def run_sync_for_company(company_config):
         ]
 
         for qb_obj, transform, h_tbl, l_tbl, h_pk, l_pk in transactional_entities_to_sync:
-            sync_transactional_data(qb_client, company_id, qb_obj, transform, h_tbl, l_tbl, h_pk, l_pk)
-            
-        database.update_sync_status(company_id, 'Success', 'Full sync completed successfully.')
-        logging.info(f"===Sync successful for: {company_config}['CompanyName']===")
+            # If a sync function returns False, set the failure flag
+            if not sync_transactional_data(qb_client, company_id, qb_obj, transform, h_tbl, l_tbl, h_pk, l_pk):
+                sync_failed = True
+
+        # Now, check the flag to determine the final status
+        if sync_failed:
+            error_message = 'One or more entities failed to sync. Check logs for details.'
+            database.update_sync_status(company_id, 'Failed', error_message)
+            logging.error(f"===Sync failed for: {company_config['CompanyName']}===")
+        else:
+            database.update_sync_status(company_id, 'Success', 'Full sync completed successfully.')
+            logging.info(f"===Sync successful for: {company_config['CompanyName']}===")
     
     except Exception as e:
         error_message = f"A critical error occurred during sync for {company_id}: {e}"
@@ -100,8 +116,3 @@ if __name__ == "__main__":
             run_sync_for_company(company)
             
     logging.info("ETL Process finished.")
-
-    
-        
-    
-    
