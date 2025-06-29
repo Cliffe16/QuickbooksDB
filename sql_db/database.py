@@ -29,10 +29,33 @@ def get_active_companies():
     logging.info("Fetching active companies from etl.Companies control table.")
     conn_str = None
     try:
-        query = "SELECT CompanyID, CompanyName, QBFilePath FROM etl.Companies where IsActive = 1" 
+        query = "SELECT CompanyID, CompanyName, QBFilePath, RefreshToken FROM etl.Companies where IsActive = 1" 
         conn_str = get_db_connection()
         df = pd.read_sql(query, conn_str)
         return df.to_dict('records')
+    finally:
+        if conn_str:
+            conn_str.close()
+            
+def update_refresh_token(company_id, new_refresh_token):
+    """Updates the refresh token for a company in the control table."""
+    logging.info(f"Updating refresh token for CompanyID {company_id}")
+    conn_str = None
+    try:
+        conn_str = get_db_connection()
+        cursor = conn_str.cursor()
+        query = """
+            UPDATE etl.Companies
+            SET RefreshToken = ?
+            WHERE CompanyID = ?
+        """
+        cursor.execute(query, new_refresh_token, company_id)
+        conn_str.commit()
+    except Exception as e:
+        logging.error(f"Failed to update refresh token for {company_id}: {e}")
+        if conn_str:
+            conn_str.rollback()
+        raise
     finally:
         if conn_str:
             conn_str.close()
