@@ -3,3 +3,6 @@ pyodbc
 pandas
 configparser
 logging
+intuitlib
+decimal 
+numpy
