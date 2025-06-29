@@ -30,6 +30,16 @@ CREATE TABLE etl.Companies(
 GO
 PRINT 'Table "etl.Companies" created.';
 
+UPDATE etl.Companies
+SET
+    CompanyID = '9341454898540847', -- This is the RealmID
+    CompanyName = 'Sandbox Company_US_1',
+    RefreshToken = 'RT1-64-H0-1759943170pxkyd5phbo4uyghg9ee1',
+    IsActive = 1;
+
+ALTER TABLE etl.Companies
+ADD RefreshToken NVARCHAR(MAX);
+
 --Populate the table with company file details
 INSERT INTO etl.Companies(
 	CompanyID,
