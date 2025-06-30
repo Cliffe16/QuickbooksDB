@@ -4,8 +4,12 @@ from sql_db import database
 from qb_api import client
 from quickbooks import objects
 import pandas as pd
+from quickbooks.objects.exchangerate import ExchangeRate
 
-logging.basicConfig(filename='logs/service.log',level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(filename='logs/service.log',
+                    level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 def sync_list_data(qb_client, company_id, qb_object, transform_func, table_name, pk_cols):
     """Generic sync function for simple list objects. Returns True on success, False on failure."""
@@ -54,7 +58,7 @@ def run_sync_for_company(company_config):
     sync_failed = False  #<-- Initialize a failure flag
 
     try:
-        # Capture both client and new token ---
+        # Capture both client and new token 
         qb_client, new_refresh_token = client.get_qb_client(company_config)
 
         # Update the refresh token in the database 
@@ -77,6 +81,21 @@ def run_sync_for_company(company_config):
             # If a sync function returns False, set the failure flag
             if not sync_list_data(qb_client, company_id, qb_obj, transform, table, pk):
                 sync_failed = True
+        
+        try:
+            logging.info("---Syncing ExchangeRate---")
+            exchange_rate_df = client.fetch_data(qb_client, ExchangeRate, company_id, client.transform_exchange_rate)
+            if exchange_rate_df is not None and not exchange_rate_df.empty:
+                pk_cols = ["CompanyID", "SourceCurrency", "AsOfDate"]
+                
+                # Sort by date and drop duplicates to keep only the most recent rate for each pair
+                exchange_rate_df_latest = exchange_rate_df.sort_values(by='AsOfDate', ascending=False).drop_duplicates(subset=pk_cols, keep='first')
+                
+                logging.info(f"Found {len(exchange_rate_df)} exchange rate records, upserting {len(exchange_rate_df_latest)} latest records.")
+                database.upsert_data(exchange_rate_df_latest, "qb_data.ExchangeRates", pk_cols)
+        except Exception as e:
+            logging.error(f"Failed to sync ExchangeRate: {e}")
+            sync_failed = True
             
         transactional_entities_to_sync = [
             (objects.Invoice, client.transform_invoice, "qb_data.Invoices", "qb_data.InvoiceLines", ["TxnID", "CompanyID"], ["TxnLineID", "CompanyID"]),
