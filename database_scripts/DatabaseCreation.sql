@@ -2,7 +2,6 @@
 
 --Create schemas for organization and security
 --Quickbooks Schema
-BEGIN TRAN;
 IF NOT EXISTS(SELECT * FROM sys.schemas WHERE name = 'qb_data')
 BEGIN
 	EXEC('CREATE SCHEMA qb_data');
@@ -16,7 +15,7 @@ BEGIN
 	PRINT'Schema "etl" created.';
 END
 GO
-COMMIT;
+
 --Create Database Control Table to manage which companies are processed
 CREATE TABLE etl.Companies(
 	CompanyID NVARCHAR(50) PRIMARY KEY NOT NULL,
@@ -25,30 +24,21 @@ CREATE TABLE etl.Companies(
 	IsActive BIT NOT NULL DEFAULT 1,
 	LastSyncStatus NVARCHAR(50),
 	LastSyncTimeUTC DATETIME2,
-	LastSyncMessage NVARCHAR(MAX)
+	LastSyncMessage NVARCHAR(MAX),
+	RefreshToken NVARCHAR(MAX)
 );
 GO
 PRINT 'Table "etl.Companies" created.';
-
-UPDATE etl.Companies
-SET
-    CompanyID = '9341454898540847', -- This is the RealmID
-    CompanyName = 'Sandbox Company_US_1',
-    RefreshToken = 'RT1-64-H0-1759943170pxkyd5phbo4uyghg9ee1',
-    IsActive = 1;
-
-ALTER TABLE etl.Companies
-ADD RefreshToken NVARCHAR(MAX);
 
 --Populate the table with company file details
 INSERT INTO etl.Companies(
 	CompanyID,
 	CompanyName,
-	QBFilePath,
-	IsActive 
+	IsActive,
+	RefreshToken
 )
 VALUES
-('9341454898540847', 'Flamingo', 'RT1-220-H0-1759856206d1okijvo3tuueitgdp40', 1);
+('9341454898540847', 'Flamingo', 1, 'RT1-220-H0-1759856206d1okijvo3tuueitgdp40');
 GO
 PRINT 'company details inserted into etl.Companies';
 
