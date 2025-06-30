@@ -345,3 +345,16 @@ CREATE TABLE qb_data.PurchaseOrderLines(
 	PRIMARY KEY (TxnLineID, CompanyID) );
 PRINT 'Tables "qb_data.PurchaseOrders" and "qb_data.PurchaseOrderLines" created.';
 
+-- Create Exchange Rates Table
+CREATE TABLE qb_data.ExchangeRates(
+    CompanyID NVARCHAR(50) NOT NULL,
+    SourceCurrency NVARCHAR(10) NOT NULL,
+    TargetCurrency NVARCHAR(10) NOT NULL,
+    Rate MONEY NOT NULL,
+    AsOfDate DATE,
+    LastModifiedUTC DATETIME2,
+    DateCreatedUTC DATETIME2,
+    PRIMARY KEY (CompanyID, SourceCurrency, AsOfDate)
+);
+PRINT 'Table "qb_data.ExchangeRates" created.';
+GO
