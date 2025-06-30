@@ -5,7 +5,7 @@ from qb_api import client
 from quickbooks import objects
 import pandas as pd
 
-logging.basicConfig(filename='service.log',level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='service/service.log',level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def sync_list_data(qb_client, company_id, qb_object, transform_func, table_name, pk_cols):
     """Generic sync function for simple list objects. Returns True on success, False on failure."""
