@@ -1,0 +1,71 @@
+2025-06-30 09:59:09,406 - INFO - ETL Process Started.
+2025-06-30 09:59:09,407 - INFO - Fetching active companies from etl.Companies control table.
+2025-06-30 09:59:09,458 - INFO - ===Starting sync for: Sandbox Company_US_1 (ID: 9341454898540847)===
+2025-06-30 09:59:09,459 - INFO - --- Initializing QuickBooks client from configuration ---
+2025-06-30 09:59:12,382 - INFO - Token refresh SUCCEEDED for Company ID: 9341454898540847.
+2025-06-30 09:59:12,383 - INFO - ---Syncing Account---
+2025-06-30 09:59:12,383 - INFO - Fetching Account...
+2025-06-30 09:59:13,750 - INFO - Successfully fetched and transformed 89 records for Account.
+2025-06-30 09:59:13,751 - INFO - Starting upsert process for 89 rows into qb_data.Accounts.
+2025-06-30 09:59:13,797 - INFO - Upsert for qb_data.Accounts successful. 89 rows affected.
+2025-06-30 09:59:13,800 - INFO - ---Syncing Customer---
+2025-06-30 09:59:13,800 - INFO - Fetching Customer...
+2025-06-30 09:59:14,391 - INFO - Successfully fetched and transformed 29 records for Customer.
+2025-06-30 09:59:14,392 - INFO - Starting upsert process for 29 rows into qb_data.Customers.
+2025-06-30 09:59:14,451 - INFO - Upsert for qb_data.Customers successful. 29 rows affected.
+2025-06-30 09:59:14,454 - INFO - ---Syncing Vendor---
+2025-06-30 09:59:14,454 - INFO - Fetching Vendor...
+2025-06-30 09:59:15,123 - INFO - Successfully fetched and transformed 26 records for Vendor.
+2025-06-30 09:59:15,124 - INFO - Starting upsert process for 26 rows into qb_data.Vendors.
+2025-06-30 09:59:15,164 - INFO - Upsert for qb_data.Vendors successful. 26 rows affected.
+2025-06-30 09:59:15,167 - INFO - ---Syncing Employee---
+2025-06-30 09:59:15,167 - INFO - Fetching Employee...
+2025-06-30 09:59:15,943 - INFO - Successfully fetched and transformed 2 records for Employee.
+2025-06-30 09:59:15,943 - INFO - Starting upsert process for 2 rows into qb_data.Employees.
+2025-06-30 09:59:15,992 - INFO - Upsert for qb_data.Employees successful. 2 rows affected.
+2025-06-30 09:59:15,995 - INFO - ---Syncing Item---
+2025-06-30 09:59:15,996 - INFO - Fetching Item...
+2025-06-30 09:59:16,461 - INFO - Successfully fetched and transformed 18 records for Item.
+2025-06-30 09:59:16,461 - INFO - Starting upsert process for 18 rows into qb_data.Items.
+2025-06-30 09:59:16,515 - INFO - Upsert for qb_data.Items successful. 18 rows affected.
+2025-06-30 09:59:16,518 - INFO - ---Syncing Class---
+2025-06-30 09:59:16,518 - INFO - Fetching Class...
+2025-06-30 09:59:16,993 - INFO - No records found for Class.
+2025-06-30 09:59:16,995 - INFO - ---Syncing Payment---
+2025-06-30 09:59:16,995 - INFO - Fetching Payment...
+2025-06-30 09:59:17,441 - INFO - Successfully fetched and transformed 16 records for Payment.
+2025-06-30 09:59:17,442 - INFO - Starting upsert process for 16 rows into qb_data.ReceivePayments.
+2025-06-30 09:59:17,477 - INFO - Upsert for qb_data.ReceivePayments successful. 16 rows affected.
+2025-06-30 09:59:17,480 - INFO - ---Syncing BillPayment---
+2025-06-30 09:59:17,480 - INFO - Fetching BillPayment...
+2025-06-30 09:59:17,898 - INFO - Successfully fetched and transformed 10 records for BillPayment.
+2025-06-30 09:59:17,899 - INFO - Starting upsert process for 10 rows into qb_data.BillPayments.
+2025-06-30 09:59:17,958 - INFO - Upsert for qb_data.BillPayments successful. 10 rows affected.
+2025-06-30 09:59:17,961 - INFO - ---Syncing Invoice---
+2025-06-30 09:59:18,874 - INFO - Starting upsert process for 31 rows into qb_data.Invoices.
+2025-06-30 09:59:18,929 - INFO - Upsert for qb_data.Invoices successful. 31 rows affected.
+2025-06-30 09:59:18,932 - INFO - Starting upsert process for 60 rows into qb_data.InvoiceLines.
+2025-06-30 09:59:18,962 - INFO - Upsert for qb_data.InvoiceLines successful. 60 rows affected.
+2025-06-30 09:59:18,965 - INFO - ---Syncing Bill---
+2025-06-30 09:59:19,590 - INFO - Starting upsert process for 15 rows into qb_data.Bills.
+2025-06-30 09:59:19,632 - INFO - Upsert for qb_data.Bills successful. 15 rows affected.
+2025-06-30 09:59:19,635 - INFO - Starting upsert process for 2 rows into qb_data.BillLines.
+2025-06-30 09:59:19,656 - INFO - Upsert for qb_data.BillLines successful. 2 rows affected.
+2025-06-30 09:59:19,659 - INFO - ---Syncing JournalEntry---
+2025-06-30 09:59:20,082 - INFO - Starting upsert process for 3 rows into qb_data.JournalEntries.
+2025-06-30 09:59:20,125 - INFO - Upsert for qb_data.JournalEntries successful. 3 rows affected.
+2025-06-30 09:59:20,128 - INFO - Starting upsert process for 6 rows into qb_data.JournalEntryLines.
+2025-06-30 09:59:20,151 - INFO - Upsert for qb_data.JournalEntryLines successful. 6 rows affected.
+2025-06-30 09:59:20,153 - INFO - ---Syncing SalesReceipt---
+2025-06-30 09:59:20,664 - INFO - Starting upsert process for 4 rows into qb_data.SalesOrders.
+2025-06-30 09:59:20,686 - INFO - Upsert for qb_data.SalesOrders successful. 4 rows affected.
+2025-06-30 09:59:20,689 - INFO - Starting upsert process for 4 rows into qb_data.SalesOrderLines.
+2025-06-30 09:59:20,709 - INFO - Upsert for qb_data.SalesOrderLines successful. 4 rows affected.
+2025-06-30 09:59:20,711 - INFO - ---Syncing PurchaseOrder---
+2025-06-30 09:59:21,250 - INFO - Starting upsert process for 3 rows into qb_data.PurchaseOrders.
+2025-06-30 09:59:21,676 - INFO - Upsert for qb_data.PurchaseOrders successful. 3 rows affected.
+2025-06-30 09:59:21,679 - INFO - Starting upsert process for 7 rows into qb_data.PurchaseOrderLines.
+2025-06-30 09:59:21,698 - INFO - Upsert for qb_data.PurchaseOrderLines successful. 7 rows affected.
+2025-06-30 09:59:21,701 - INFO - Updating sync status for CompanyID 9341454898540847: Success
+2025-06-30 09:59:21,704 - INFO - ===Sync successful for: Sandbox Company_US_1===
+2025-06-30 09:59:21,705 - INFO - ETL Process finished.
