@@ -21,7 +21,8 @@ def get_qb_client(company_config):
     # Load company-specific credentials from the company_config parameter 
     refresh_token = company_config['RefreshToken']
     company_id = company_config['CompanyID']
-
+    
+    # Define authentication client
     auth_client = AuthClient(
         client_id=qb_config.get('client_id'),
         client_secret=qb_config.get('client_secret'),
@@ -57,7 +58,7 @@ def _flatten_address(addr, prefix):
         f"{prefix}_PostalCode": getattr(addr, 'PostalCode', None)
     }
 
-# --- Helper functions to sanitize data ---
+# Helper functions to sanitize data 
 def to_date(date_val):
     """Converts a value to a YYYY-MM-DD date string or None."""
     if not date_val:
@@ -70,7 +71,6 @@ def to_numeric(value):
         return None
     return value
 
-# --- FIX: New helper function to explicitly cast to float for FLOAT columns ---
 def to_float(value):
     """Safely converts a value to a float for FLOAT columns, or returns None."""
     if value is None or value == '':
@@ -89,13 +89,9 @@ def fetch_data(qb_client, qb_object, company_id, transform_func):
             logging.info(f"No records found for {qb_object.__name__}.")
             return pd.DataFrame()
         
-        records = [transform_func(e, company_id) for e in all_entities] #Loop through every item in all_entities and 
-                                                                        #pass through the transformer function
+        records = [transform_func(e, company_id) for e in all_entities]
         
         df = pd.DataFrame(records)
-        
-        # FINAL FIX: Replace numpy's Not a Number (NaN) with None.
-        # The pyodbc driver cannot handle NaN values, but it can handle None (for NULL).
         df = df.replace({np.nan: None})
         
         logging.info(f"Successfully fetched and transformed {len(df)} records for {qb_object.__name__}.")
@@ -104,7 +100,7 @@ def fetch_data(qb_client, qb_object, company_id, transform_func):
         logging.error(f"Failed to fetch {qb_object.__name__}: {e}")
         return pd.DataFrame()
 
-#Transformation Functions for each Entity
+# Transformation Functions for each Entity
 def transform_account(a, cid):
     meta_data = getattr(a, 'MetaData', {})
     return {
@@ -193,11 +189,23 @@ def transform_class(c, cid):
         "DateCreatedUTC": to_date(getattr(meta_data, 'CreateTime', None))
     }
 
+def transform_exchange_rate(er, cid):
+    """Transforms a QuickBooks ExchangeRate object into a dictionary for database insertion."""
+    meta_data = getattr(er, 'MetaData', {})
+    return {
+        "CompanyID": cid,
+        "SourceCurrency": er.SourceCurrencyCode,
+        "TargetCurrency": er.TargetCurrencyCode,
+        "Rate": to_numeric(er.Rate),
+        "AsOfDate": to_date(er.AsOfDate),
+        "LastModifiedUTC": to_date(getattr(meta_data, 'LastUpdatedTime', None)),
+        "DateCreatedUTC": to_date(getattr(meta_data, 'CreateTime', None))
+    }
+
 def transform_invoice(inv, cid):
     meta_data = getattr(inv, 'MetaData', {})
     txn_tax_detail = getattr(inv, 'TxnTaxDetail', {})
 
-    # FIX: Explicitly cast all values to Decimal for calculations to prevent TypeError.
     tax_val = to_numeric(getattr(txn_tax_detail, 'TotalTax', 0))
     total_val = to_numeric(inv.TotalAmt)
     balance_val = to_numeric(inv.Balance)
