@@ -8,6 +8,9 @@ CREATE USER Cliffe FOR LOGIN QB_API;
 -- Grant permissions to the user
 GRANT SELECT, UPDATE ON SCHEMA::etl TO Cliffe;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::qb_data TO Cliffe;
+-- Grant the permission to a specific login
+GRANT ADMINISTER BULK OPERATIONS TO Oscar1;
+GO
 
 /*DATABASE ENCRYPTION*//*
 -- (This must be run on the master database first)
