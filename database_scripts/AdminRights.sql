@@ -1,6 +1,6 @@
 /*ADMINISTRATIVE RIGHTS*/
 -- Create a login for the Python application
-CREATE LOGIN QB_API WITH PASSWORD = 'DRUMbeats9876@FL!';
+CREATE LOGIN QB_API WITH PASSWORD = '';
 
 -- Create a user in your database for that login
 CREATE USER Cliffe FOR LOGIN QB_API;
