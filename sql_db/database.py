@@ -2,6 +2,7 @@ import pyodbc
 import pandas as pd
 from configparser import ConfigParser
 import logging
+import os
 
 def get_db_connection():
     """Establishes and returns a pyodbc database connection."""

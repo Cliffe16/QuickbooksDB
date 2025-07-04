@@ -6,3 +6,4 @@ logging
 intuitlib
 decimal 
 numpy
+os

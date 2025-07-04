@@ -8,6 +8,7 @@ import pandas as pd
 import logging
 from decimal import Decimal
 import numpy as np
+import os 
 
 def get_qb_client(company_config):
     """Initializes and returns a Quickbooks client with hardcoded credentials for a definitive test."""
